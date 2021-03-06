@@ -8,7 +8,7 @@
     "code-runner.runInTerminal": true, // 设置成false会在“输出”中输出，无法输入
     "code-runner.executorMap": {
         "c": "gcc '$fileName' -o '$fileNameWithoutExt.exe' -Wall -O2 -m64 -lm -static-libgcc -fexec-charset=GBK -D__USE_MINGW_ANSI_STDIO && &'./$fileNameWithoutExt.exe'",
-        "cpp": "g++ '$fileName' -o ${ta}'$fileNameWithoutExt.exe' -I'D:/Games101/eigen3/' -Wall -O2 -m64 -static-libgcc -fexec-charset=GBK && &'./$fileNameWithoutExt.exe'"
+        "cpp": "g++ *.cpp -o ${ta}'$fileNameWithoutExt.exe' -Wall -O2 -m64 -static-libgcc -fexec-charset=GBK -I'D:/Games101/eigen3/' -I'C:/opencv/build/include' -L'C:/opencv/build/x64/MinGW/bin' -llibopencv_calib3d451 -llibopencv_core451 -llibopencv_dnn451 -llibopencv_features2d451 -llibopencv_flann451 -llibopencv_gapi451 -llibopencv_highgui451 -llibopencv_imgcodecs451 -llibopencv_imgproc451 -llibopencv_ml451 -llibopencv_objdetect451 -llibopencv_photo451 -llibopencv_stitching451 -llibopencv_video451 -llibopencv_videoio451 -lopencv_videoio_ffmpeg451_64 && &'./$fileNameWithoutExt.exe'"
         // "c": "gcc $fileName -o $fileNameWithoutExt.exe -Wall -O2 -m64 -lm -static-libgcc -fexec-charset=GBK -D__USE_MINGW_ANSI_STDIO && $dir$fileNameWithoutExt.exe",
         // "cpp": "g++ $fileName -o $fileNameWithoutExt.exe -Wall -O2 -m64 -static-libgcc -fexec-charset=GBK && $dir$fileNameWithoutExt.exe"
     }, // 右键run code时运行的命令；未注释的仅适用于PowerShell（Win10默认）和pwsh，文件名中有空格也可以编译运行；注释掉的适用于cmd（win7默认）、PS和bash，但文件名中有空格时无法运行

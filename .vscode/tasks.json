@@ -4,14 +4,31 @@
         "label": "GAMES101", 
         "command": "C:/mingw64/bin/g++.exe",  
         "args": [
-            "-g",
-            "${file}",
-            "-I'D:/Games101/eigen3/'", 
+            "${fileDirname}/*.cpp",
             "-o",
-            "${fileDirname}/${fileBasenameNoExtension}.exe"
+            "${fileDirname}/${fileBasenameNoExtension}.exe",
+            "-I'D:/Games101/eigen3/'",
+            "-I'C:/opencv/build/include'",
+            "-L'C:/opencv/build/x64/MinGW/bin'",
+            "-llibopencv_calib3d451",
+            "-llibopencv_core451",
+            "-llibopencv_dnn451",
+            "-llibopencv_features2d451",
+            "-llibopencv_flann451",
+            "-llibopencv_gapi451",
+            "-llibopencv_highgui451",
+            "-llibopencv_imgcodecs451",
+            "-llibopencv_imgproc451",
+            "-llibopencv_ml451",
+            "-llibopencv_objdetect451",
+            "-llibopencv_photo451",
+            "-llibopencv_stitching451",
+            "-llibopencv_video451",
+            "-llibopencv_videoio451",
+            "-lopencv_videoio_ffmpeg451_64"
         ],
         "options": {
-            "cwd": "C:/mingw64/bin"
+            "cwd": "C:/mingw64/bin",
         },
         "type": "shell",
         "group": {

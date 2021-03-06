@@ -4,13 +4,20 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "D:/Games101/eigen3"
+                "D:/Games101/eigen3",
+                "C:/opencv/build/include"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
             ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**",
+                    "C:/opencv/build/x64/vc14/lib"
+                ]
+            },
             "windowsSdkVersion": "10.0.18362.0",
             "compilerPath": "C:/mingw64/bin/g++.exe",
             "cStandard": "c17",
