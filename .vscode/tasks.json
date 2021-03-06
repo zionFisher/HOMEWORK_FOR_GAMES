@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [{
+        "label": "GAMES101", 
+        "command": "C:/mingw64/bin/g++.exe",  
+        "args": [
+            "-g",
+            "${file}",
+            "-I'D:/Games101/eigen3/'", 
+            "-o",
+            "${fileDirname}/${fileBasenameNoExtension}.exe"
+        ],
+        "options": {
+            "cwd": "C:/mingw64/bin"
+        },
+        "type": "shell",
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        },
+        "presentation": {
+            "echo": true,
+            "reveal": "always",
+            "focus": false,    
+            "panel": "shared"  
+        },
+        "problemMatcher":"$gcc" 
+    }]
+}
