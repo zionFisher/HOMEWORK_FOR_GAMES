@@ -3,16 +3,20 @@
 #include <Eigen/Eigen>
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <cmath>
 
 constexpr double MY_PI = 3.1415926;
 
 Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
 {
+    //Identity matrix: 单位矩阵
     Eigen::Matrix4f view = Eigen::Matrix4f::Identity();
 
     Eigen::Matrix4f translate;
-    translate << 1, 0, 0, -eye_pos[0], 0, 1, 0, -eye_pos[1], 0, 0, 1,
-        -eye_pos[2], 0, 0, 0, 1;
+    translate << 1, 0, 0, -eye_pos[0], 
+                 0, 1, 0, -eye_pos[1], 
+                 0, 0, 1, -eye_pos[2], 
+                 0, 0, 0, 1;
 
     view = translate * view;
 
@@ -23,9 +27,13 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
 {
     Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
 
-    // TODO: Implement this function
-    // Create the model matrix for rotating the triangle around the Z axis.
-    // Then return it.
+    Eigen::Matrix4f rotate;
+    rotate << cos(rotation_angle / 180.0 * MY_PI), -sin(rotation_angle / 180.0 * MY_PI), 0, 0,
+              sin(rotation_angle / 180.0 * MY_PI), cos(rotation_angle / 180.0 * MY_PI),  0, 0,
+              0,                                   0,                                    1, 0,
+              0,                                   0,                                    0, 1;
+
+    model = rotate * model; 
 
     return model;
 }
@@ -33,13 +41,30 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
                                       float zNear, float zFar)
 {
-    // Students will implement this function
-
     Eigen::Matrix4f projection = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f pToO, ortho, scale, translate;
+    float t = tan(eye_fov / 2) * fabs(zNear);
+    float r = aspect_ratio * t;
+    float b = -t, l = -r;
 
-    // TODO: Implement this function
-    // Create the projection matrix for the given parameters.
-    // Then return it.
+    // 当pToO矩阵的第四行第三列为-1时，图像将上下颠倒，OpenGL采用左手坐标系，此处应该是-1，闫老师采用右手坐标系，此处应该是1
+    pToO << zNear, 0,     0,            0,
+            0,     zNear, 0,            0,
+            0,     0,     zNear + zFar, -zNear * zFar,
+            0,     0,     1,            0;
+
+    scale << 2 / (r - l), 0,           0,                  0,
+             0,           2 / (t - b), 0,                  0,
+             0,           0,           2 / (zNear - zFar), 0,
+             0,           0,           0,                  1;
+
+    translate << 1, 0, 0, -(r + l) / 2,
+                 0, 1, 0, -(t + b) / 2,
+                 0, 0, 1, -(zNear + zFar) / 2,
+                 0, 0, 0, 1;
+
+    ortho = scale * translate;
+    projection = ortho * pToO;
 
     return projection;
 }

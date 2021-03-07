@@ -23,6 +23,9 @@
         "*.cjson": "jsonc",
         "*.wxss": "css",
         "*.wxs": "javascript",
-        "core": "cpp"
+        "core": "cpp",
+        "cmath": "cpp",
+        "iostream": "cpp",
+        "ostream": "cpp"
     }, // 格式化时调整include的顺序（按字母排序）
 }
