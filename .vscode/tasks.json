@@ -1,46 +1,69 @@
 {
     "version": "2.0.0",
-    "tasks": [{
-        "label": "GAMES101", 
-        "command": "C:/mingw64/bin/g++.exe",  
-        "args": [
-            "${fileDirname}/*.cpp",
-            "-o",
-            "${fileDirname}/${fileBasenameNoExtension}.exe",
-            "-I'D:/Games101/eigen3/'",
-            "-I'C:/opencv/build/include'",
-            "-L'C:/opencv/build/x64/MinGW/bin'",
-            "-llibopencv_calib3d451",
-            "-llibopencv_core451",
-            "-llibopencv_dnn451",
-            "-llibopencv_features2d451",
-            "-llibopencv_flann451",
-            "-llibopencv_gapi451",
-            "-llibopencv_highgui451",
-            "-llibopencv_imgcodecs451",
-            "-llibopencv_imgproc451",
-            "-llibopencv_ml451",
-            "-llibopencv_objdetect451",
-            "-llibopencv_photo451",
-            "-llibopencv_stitching451",
-            "-llibopencv_video451",
-            "-llibopencv_videoio451",
-            "-lopencv_videoio_ffmpeg451_64"
-        ],
-        "options": {
-            "cwd": "C:/mingw64/bin",
+    "tasks": [
+        {
+            "label": "GAMES101",
+            "command": "C:/mingw64/bin/g++.exe",
+            "args": [
+                "-std=c++17",
+                "-g",
+                "${fileDirname}/*.cpp",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}.exe",
+                "-I'D:/Games101/eigen3/'",
+                "-I'C:/opencv/build/include'",
+                "-L'C:/opencv/build/x64/MinGW/bin'",
+                "-llibopencv_calib3d451",
+                "-llibopencv_core451",
+                "-llibopencv_dnn451",
+                "-llibopencv_features2d451",
+                "-llibopencv_flann451",
+                "-llibopencv_gapi451",
+                "-llibopencv_highgui451",
+                "-llibopencv_imgcodecs451",
+                "-llibopencv_imgproc451",
+                "-llibopencv_ml451",
+                "-llibopencv_objdetect451",
+                "-llibopencv_photo451",
+                "-llibopencv_stitching451",
+                "-llibopencv_video451",
+                "-llibopencv_videoio451",
+                "-lopencv_videoio_ffmpeg451_64"
+            ],
+            "options": {
+                "cwd": "C:/mingw64/bin"
+            },
+            "type": "shell",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": "$gcc"
         },
-        "type": "shell",
-        "group": {
-            "kind": "build",
-            "isDefault": true
-        },
-        "presentation": {
-            "echo": true,
-            "reveal": "always",
-            "focus": false,    
-            "panel": "shared"  
-        },
-        "problemMatcher":"$gcc" 
-    }]
+        {
+            "type": "cppbuild",
+            "label": "C/C++: cpp.exe 生成活动文件",
+            "command": "C:\\mingw64\\bin\\cpp.exe",
+            "args": [
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "调试器生成的任务。"
+        }
+    ]
 }
