@@ -48,7 +48,7 @@ static bool insideTriangle(int x, int y, const Vector3f* _v)
     Vector3f AP = {x - _v[0].x(), y - _v[0].y(), 0};
     Vector3f BP = {x - _v[1].x(), y - _v[1].y(), 0};
     Vector3f CP = {x - _v[2].x(), y - _v[2].y(), 0};
-    if (AP.cross(AB).z() < 0 && BP.cross(BC).z() < 0 & CP.cross(CA).z() < 0)
+    if (AP.cross(AB).z() < 0 && BP.cross(BC).z() < 0 && CP.cross(CA).z() < 0)
         return true;
     return false;
 }
