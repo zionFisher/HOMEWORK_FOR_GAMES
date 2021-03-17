@@ -47,7 +47,7 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
     float r = aspect_ratio * t;
     float b = -t, l = -r;
 
-    // 原矩阵:
+    // 使用原矩阵会使三角形倒过来，这是由闫老师的采用的坐标系不同导致的:
     //pToO << zNear, 0,     0,            0,
     //        0,     zNear, 0,            0,
     //        0,     0,     zNear + zFar, -zNear * zFar,

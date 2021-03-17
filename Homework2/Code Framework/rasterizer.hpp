@@ -91,11 +91,17 @@ namespace rst
         std::map<int, std::vector<Eigen::Vector3f>> col_buf;
 
         std::vector<Eigen::Vector3f> frame_buf;
+        std::vector<Eigen::Vector3f> MSAA_frame_buf;
 
         std::vector<float> depth_buf;
+        std::vector<float> MSAA_depth_buf;
         int get_index(int x, int y);
+        int get_MSAA_index(float x, float y);
+        void set_depth_and_frame(float x, float y, std::array<Eigen::Vector4f, 3> v, const Triangle &t, int index);
 
         int width, height;
+        bool insideFlag;
+        bool depthFlag;
 
         int next_id = 0;
         int get_next_id() { return next_id++; }

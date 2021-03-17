@@ -40,7 +40,7 @@ auto to_vec4(const Eigen::Vector3f& v3, float w = 1.0f)
 }
 
 
-static bool insideTriangle(int x, int y, const Vector3f* _v)
+static bool insideTriangle(float x, float y, const Vector3f* _v) // 做叉积即可
 {
     Vector3f AB = {_v[1].x() - _v[0].x(), _v[1].y() - _v[0].y(), 0};
     Vector3f BC = {_v[2].x() - _v[1].x(), _v[2].y() - _v[1].y(), 0};
@@ -48,7 +48,7 @@ static bool insideTriangle(int x, int y, const Vector3f* _v)
     Vector3f AP = {x - _v[0].x(), y - _v[0].y(), 0};
     Vector3f BP = {x - _v[1].x(), y - _v[1].y(), 0};
     Vector3f CP = {x - _v[2].x(), y - _v[2].y(), 0};
-    if (AP.cross(AB).z() < 0 && BP.cross(BC).z() < 0 && CP.cross(CA).z() < 0)
+    if (AP.cross(AB).z() < 0 && BP.cross(BC).z() < 0 && CP.cross(CA).z() < 0) // 由于是 AP 叉乘 AB，因此要得到均得到负值才代表在三角形内
         return true;
     return false;
 }
@@ -121,34 +121,56 @@ float min(float a, float b)
 }
 
 //Screen space rasterization
-void rst::rasterizer::rasterize_triangle(const Triangle& t) {
+void rst::rasterizer::rasterize_triangle(const Triangle& t) 
+{
     auto v = t.toVector4();
+    int xmax = max(t.v[0].x(), max(t.v[1].x(), t.v[2].x())),
+        xmin = min(t.v[0].x(), min(t.v[1].x(), t.v[2].x())), 
+        ymax = max(t.v[0].y(), max(t.v[1].y(), t.v[2].y())),
+        ymin = min(t.v[0].y(), min(t.v[1].y(), t.v[2].y()));
 
-    int xmax, xmin, ymax, ymin;
-    
-    xmax = max(t.v[0].x(), max(t.v[1].x(), t.v[2].x()));
-    xmin = min(t.v[0].x(), min(t.v[1].x(), t.v[2].x()));
-    ymax = max(t.v[0].y(), max(t.v[1].y(), t.v[2].y()));
-    ymin = min(t.v[0].y(), min(t.v[1].y(), t.v[2].y()));
-
+    // using 4xMSAA 
     for (int x = xmin; x <= xmax; x++)
     {
         for (int y = ymin; y <= ymax; y++)
         {
-            if (insideTriangle(x, y, t.v))
+            insideFlag = false; // insideFlag 代表像素任意1/4是否位于三角形内
+            depthFlag = false; // depthFlag 代表像素任意1/4深度是否小于原深度
+            float X[4] = {x + 0.0f, x + 0.5f, x + 0.0f, x + 0.5f}; // 像素四等分，加四个0.0f是因为不想看到warning
+            float Y[4] = {y + 0.0f, y + 0.0f, y + 0.5f, y + 0.5f};
+            int INDEX[4] = {get_MSAA_index(X[0], Y[0]), // 获取 MSAA_depth_buf 和 MSAA_frame_buf 的 index
+                            get_MSAA_index(X[1], Y[1]),
+                            get_MSAA_index(X[2], Y[2]),
+                            get_MSAA_index(X[3], Y[3])};
+            
+            for (int count = 0; count < 4; count++) // 遍历单像素的每个1/4
             {
-                auto[alpha, beta, gamma] = computeBarycentric2D(x, y, t.v);
-                float w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
-                float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
-                z_interpolated *= w_reciprocal;
-                auto depth = get_index(x, y);
-                if (z_interpolated < depth_buf[depth])
+                if (insideTriangle(X[count], Y[count], t.v))
                 {
-                    set_pixel(Vector3f(x, y, 1.0f), t.getColor());
-                    depth_buf[depth] = z_interpolated;
+                    insideFlag = true;
+                    set_depth_and_frame(X[count], Y[count], v, t, INDEX[count]); // 如果在三角形内就进行插值运算和深度判读
                 }
             }
+            if (insideFlag  == true && depthFlag == true) // 如果在三角形内且深度更小
+            {
+                auto color = (MSAA_frame_buf[INDEX[0]] + MSAA_frame_buf[INDEX[1]] + MSAA_frame_buf[INDEX[2]] + MSAA_frame_buf[INDEX[3]]) / 4;
+                set_pixel(Vector3f(x, y, 1.0f), color); // color 是每个1/4取平均值后的颜色，这样才不会出现黑边
+            }
         }
+    }
+}
+
+void rst::rasterizer::set_depth_and_frame(float x, float y, std::array<Eigen::Vector4f, 3> v, const Triangle &t, int index)
+{
+    auto[alpha, beta, gamma] = computeBarycentric2D(x, y, t.v); // 插值运算，从auto[alpha, beta, gamma]到*= w_reciprocal;的代码由代码框架给出
+    float w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
+    float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
+    z_interpolated *= w_reciprocal;
+    if (z_interpolated < MSAA_depth_buf[index]) // 如果当前深度小于原深度
+    {
+        depthFlag = true;
+        MSAA_depth_buf[index] = z_interpolated; // 更新深度
+        MSAA_frame_buf[index] = t.getColor(); // 更新屏幕像素信息
     }
 }
 
@@ -172,10 +194,12 @@ void rst::rasterizer::clear(rst::Buffers buff)
     if ((buff & rst::Buffers::Color) == rst::Buffers::Color)
     {
         std::fill(frame_buf.begin(), frame_buf.end(), Eigen::Vector3f{0, 0, 0});
+        std::fill(MSAA_frame_buf.begin(), MSAA_frame_buf.end(), Eigen::Vector3f{0, 0, 0}); // 填充颜色值
     }
     if ((buff & rst::Buffers::Depth) == rst::Buffers::Depth)
     {
         std::fill(depth_buf.begin(), depth_buf.end(), std::numeric_limits<float>::infinity());
+        std::fill(MSAA_depth_buf.begin(), MSAA_depth_buf.end(), std::numeric_limits<float>::infinity()); // 填充深度值
     }
 }
 
@@ -183,11 +207,18 @@ rst::rasterizer::rasterizer(int w, int h) : width(w), height(h)
 {
     frame_buf.resize(w * h);
     depth_buf.resize(w * h);
+    MSAA_depth_buf.resize(4 * w * h); // 定义大小
+    MSAA_frame_buf.resize(4 * w * h); 
 }
 
 int rst::rasterizer::get_index(int x, int y)
 {
-    return (height-1-y)*width + x;
+    return (height - 1 - y) * width + x;
+}
+
+int rst::rasterizer::get_MSAA_index(float x, float y)
+{
+    return (2 * height - 1 - 2 * y) * (2 * width) + 2 * x; // MSAA 的 index 推算结果是将原数据都乘 2
 }
 
 void rst::rasterizer::set_pixel(const Eigen::Vector3f& point, const Eigen::Vector3f& color)
