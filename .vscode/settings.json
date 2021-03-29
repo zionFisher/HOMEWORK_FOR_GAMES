@@ -81,6 +81,7 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "eigen": "cpp"
     }, // 格式化时调整include的顺序（按字母排序）
 }

@@ -123,38 +123,67 @@ float min(float a, float b)
 //Screen space rasterization
 void rst::rasterizer::rasterize_triangle(const Triangle& t) 
 {
-    auto v = t.toVector4();
-    int xmax = max(t.v[0].x(), max(t.v[1].x(), t.v[2].x())),
-        xmin = min(t.v[0].x(), min(t.v[1].x(), t.v[2].x())), 
-        ymax = max(t.v[0].y(), max(t.v[1].y(), t.v[2].y())),
-        ymin = min(t.v[0].y(), min(t.v[1].y(), t.v[2].y()));
+    // auto v = t.toVector4();
+    // int xmax = max(t.v[0].x(), max(t.v[1].x(), t.v[2].x())),
+    //     xmin = min(t.v[0].x(), min(t.v[1].x(), t.v[2].x())), 
+    //     ymax = max(t.v[0].y(), max(t.v[1].y(), t.v[2].y())),
+    //     ymin = min(t.v[0].y(), min(t.v[1].y(), t.v[2].y()));
 
-    // using 4xMSAA 
+    // // using 4xMSAA 
+    // for (int x = xmin; x <= xmax; x++)
+    // {
+    //     for (int y = ymin; y <= ymax; y++)
+    //     {
+    //         insideFlag = false; // insideFlag 代表像素任意1/4是否位于三角形内
+    //         depthFlag = false; // depthFlag 代表像素任意1/4深度是否小于原深度
+    //         float X[4] = {x + 0.0f, x + 0.5f, x + 0.0f, x + 0.5f}; // 像素四等分，加四个0.0f是因为不想看到warning
+    //         float Y[4] = {y + 0.0f, y + 0.0f, y + 0.5f, y + 0.5f};
+    //         int INDEX[4] = {get_MSAA_index(X[0], Y[0]), // 获取 MSAA_depth_buf 和 MSAA_frame_buf 的 index
+    //                         get_MSAA_index(X[1], Y[1]),
+    //                         get_MSAA_index(X[2], Y[2]),
+    //                         get_MSAA_index(X[3], Y[3])};
+            
+    //         for (int count = 0; count < 4; count++) // 遍历单像素的每个1/4
+    //         {
+    //             if (insideTriangle(X[count], Y[count], t.v))
+    //             {
+    //                 insideFlag = true;
+    //                 set_depth_and_frame(X[count], Y[count], v, t, INDEX[count]); // 如果在三角形内就进行插值运算和深度判读
+    //             }
+    //         }
+    //         if (insideFlag  == true && depthFlag == true) // 如果在三角形内且深度更小
+    //         {
+    //             auto color = (MSAA_frame_buf[INDEX[0]] + MSAA_frame_buf[INDEX[1]] + MSAA_frame_buf[INDEX[2]] + MSAA_frame_buf[INDEX[3]]) / 4;
+    //             set_pixel(Vector3f(x, y, 1.0f), color); // color 是每个1/4取平均值后的颜色，这样才不会出现黑边
+    //         }
+    //     }
+    // }
+     
+    auto v = t.toVector4();
+    
+    int xmax, xmin, ymax, ymin;
+    
+    xmax = max(t.v[0].x(), max(t.v[1].x(), t.v[2].x()));
+    xmin = min(t.v[0].x(), min(t.v[1].x(), t.v[2].x()));
+    ymax = max(t.v[0].y(), max(t.v[1].y(), t.v[2].y()));
+    ymin = min(t.v[0].y(), min(t.v[1].y(), t.v[2].y()));
+    
     for (int x = xmin; x <= xmax; x++)
     {
         for (int y = ymin; y <= ymax; y++)
         {
-            insideFlag = false; // insideFlag 代表像素任意1/4是否位于三角形内
-            depthFlag = false; // depthFlag 代表像素任意1/4深度是否小于原深度
-            float X[4] = {x + 0.0f, x + 0.5f, x + 0.0f, x + 0.5f}; // 像素四等分，加四个0.0f是因为不想看到warning
-            float Y[4] = {y + 0.0f, y + 0.0f, y + 0.5f, y + 0.5f};
-            int INDEX[4] = {get_MSAA_index(X[0], Y[0]), // 获取 MSAA_depth_buf 和 MSAA_frame_buf 的 index
-                            get_MSAA_index(X[1], Y[1]),
-                            get_MSAA_index(X[2], Y[2]),
-                            get_MSAA_index(X[3], Y[3])};
-            
-            for (int count = 0; count < 4; count++) // 遍历单像素的每个1/4
+            if (insideTriangle(x, y, t.v))
             {
-                if (insideTriangle(X[count], Y[count], t.v))
+                auto[alpha, beta, gamma] = computeBarycentric2D(x, y, t.v);
+                float w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
+                float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
+                z_interpolated *= w_reciprocal;
+                auto depth = get_index(x, y);
+                if (z_interpolated < depth_buf[depth])
                 {
-                    insideFlag = true;
-                    set_depth_and_frame(X[count], Y[count], v, t, INDEX[count]); // 如果在三角形内就进行插值运算和深度判读
+                    set_pixel(Vector3f(x, y, 1.0f), t.getColor());
+                    depth_buf[depth] = z_interpolated;
                 }
-            }
-            if (insideFlag  == true && depthFlag == true) // 如果在三角形内且深度更小
-            {
-                auto color = (MSAA_frame_buf[INDEX[0]] + MSAA_frame_buf[INDEX[1]] + MSAA_frame_buf[INDEX[2]] + MSAA_frame_buf[INDEX[3]]) / 4;
-                set_pixel(Vector3f(x, y, 1.0f), color); // color 是每个1/4取平均值后的颜色，这样才不会出现黑边
             }
         }
     }
