@@ -223,6 +223,12 @@ void Renderer::Render(const Scene& scene)
         for (int i = 0; i < scene.width; ++i)
         {
             // generate primary ray direction
+            // rasterSpaceCoordx = i
+            // rasterSpaceCoordy = j
+            // NDCx = (rasterSpaceCoordx + 0.5) / imageWidth
+            // NDCy = (rasterSpaceCoordy + 0.5) / imageWidth
+            // worldSpaceCoordx = (2 * NDCx - 1) * imageAspectRatio * scale
+            // worldSpaceCoordy = (1 - 2 * NDCy) * scale
             float x = (2 * (i + 0.5) / scene.width - 1) * imageAspectRatio * scale;
             float y = (1 - 2 * (j + 0.5) / scene.height) * scale;       
 
