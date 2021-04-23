@@ -1,6 +1,6 @@
-# HOMEWORK_FOR_GAMES
-Homework for GAMES101 Computer Graphics
-GAMES101 课后作业代码：
+# HOMEWORK_FOR_GAMES \p
+Homework for GAMES101 Computer Graphics \p
+GAMES101 课后作业代码：\p
 作业0：已完成
 作业1：已完成，提高题未完成
 作业2：已完成，提高题已完成
