@@ -8,6 +8,7 @@
 #include "Vector.hpp"
 #include <limits>
 #include <array>
+#include <iostream>
 
 class Bounds3
 {
@@ -88,15 +89,36 @@ class Bounds3
                            const std::array<int, 3>& dirisNeg) const;
 };
 
-
-
 inline bool Bounds3::IntersectP(const Ray& ray, const Vector3f& invDir,
                                 const std::array<int, 3>& dirIsNeg) const
 {
     // invDir: ray direction(x,y,z), invDir=(1.0/x,1.0/y,1.0/z), use this because Multiply is faster that Division
     // dirIsNeg: ray direction(x,y,z), dirIsNeg=[int(x>0),int(y>0),int(z>0)], use this to simplify your logic
-    // TODO test if ray bound intersects
-    
+    // pMax, pMin: two points to specify the bounding box
+    float t1Max = (pMax.x - ray.origin.x) * invDir.x;
+    float t1Min = (pMin.x - ray.origin.x) * invDir.x;
+    float t2Max = (pMax.y - ray.origin.y) * invDir.y;
+    float t2Min = (pMin.y - ray.origin.y) * invDir.y;
+    float t3Max = (pMax.z - ray.origin.z) * invDir.z;
+    float t3Min = (pMin.z - ray.origin.z) * invDir.z;
+
+    if (!dirIsNeg[0])
+    {
+        std::swap(t1Max, t1Min);
+    }
+    if (!dirIsNeg[1])
+    {
+        std::swap(t2Max, t2Min);
+    }
+    if (!dirIsNeg[2])
+    {
+        std::swap(t3Max, t3Min);
+    }
+
+    float tEnter = std::max(std::max(t1Min, t2Min), t3Min);
+    float tExit = std::min(std::min(t1Max, t2Max), t3Max);
+
+    return (tEnter < tExit) && (tExit >= 0);
 }
 
 inline Bounds3 Union(const Bounds3& b1, const Bounds3& b2)
