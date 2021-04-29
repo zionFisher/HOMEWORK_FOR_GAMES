@@ -8,7 +8,6 @@
 #include "Vector.hpp"
 #include <limits>
 #include <array>
-#include <iostream>
 
 class Bounds3
 {
@@ -88,6 +87,8 @@ class Bounds3
     inline bool IntersectP(const Ray& ray, const Vector3f& invDir,
                            const std::array<int, 3>& dirisNeg) const;
 };
+
+
 
 inline bool Bounds3::IntersectP(const Ray& ray, const Vector3f& invDir,
                                 const std::array<int, 3>& dirIsNeg) const
